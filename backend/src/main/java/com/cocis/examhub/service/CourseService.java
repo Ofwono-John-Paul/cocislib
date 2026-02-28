@@ -2,6 +2,7 @@ package com.cocis.examhub.service;
 
 import com.cocis.examhub.dto.CourseDTO;
 import com.cocis.examhub.dto.CourseUnitDTO;
+import com.cocis.examhub.dto.CourseUnitRequestDTO;
 import com.cocis.examhub.entity.Course;
 import com.cocis.examhub.entity.CourseUnit;
 import com.cocis.examhub.repository.CourseRepository;
@@ -198,6 +199,57 @@ public class CourseService {
     @Transactional(readOnly = true)
     public List<Integer> getSemestersByCourseIdAndYear(Long courseId, Integer year) {
         return courseUnitRepository.findDistinctSemestersByCourseIdAndYear(courseId, year);
+    }
+    
+    // Course Unit CRUD Operations
+    
+    @Transactional
+    public CourseUnitDTO createCourseUnit(CourseUnitRequestDTO request) {
+        Course course = courseRepository.findById(request.getCourseId())
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        
+        CourseUnit courseUnit = CourseUnit.builder()
+                .name(request.getName())
+                .code(request.getCode())
+                .year(request.getYear())
+                .semester(request.getSemester())
+                .course(course)
+                .build();
+        
+        CourseUnit saved = courseUnitRepository.save(courseUnit);
+        return mapUnitToDTO(saved);
+    }
+    
+    @Transactional
+    public CourseUnitDTO updateCourseUnit(Long id, CourseUnitRequestDTO request) {
+        CourseUnit courseUnit = courseUnitRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Course unit not found"));
+        
+        Course course = courseRepository.findById(request.getCourseId())
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        
+        courseUnit.setName(request.getName());
+        courseUnit.setCode(request.getCode());
+        courseUnit.setYear(request.getYear());
+        courseUnit.setSemester(request.getSemester());
+        courseUnit.setCourse(course);
+        
+        CourseUnit updated = courseUnitRepository.save(courseUnit);
+        return mapUnitToDTO(updated);
+    }
+    
+    @Transactional
+    public void deleteCourseUnit(Long id) {
+        CourseUnit courseUnit = courseUnitRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Course unit not found"));
+        courseUnitRepository.delete(courseUnit);
+    }
+    
+    @Transactional(readOnly = true)
+    public CourseUnitDTO getCourseUnitById(Long id) {
+        CourseUnit courseUnit = courseUnitRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Course unit not found"));
+        return mapUnitToDTO(courseUnit);
     }
     
     private CourseDTO mapToDTO(Course course) {
