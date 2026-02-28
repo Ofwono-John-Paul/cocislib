@@ -11,6 +11,7 @@ C:\Users\CZAR-COMPUTERS\Desktop\files\repo\c_lib\cocislib\backend\src\main\java\
 C:\Users\CZAR-COMPUTERS\Desktop\files\repo\c_lib\cocislib\backend\src\main\java\com\cocis\examhub\service\CourseService.java
 C:\Users\CZAR-COMPUTERS\Desktop\files\repo\c_lib\cocislib\backend\src\main\java\com\cocis\examhub\repository\CourseUnitRepository.java
 C:\Users\CZAR-COMPUTERS\Desktop\files\repo\c_lib\cocislib\backend\src\main\java\com\cocis\examhub\dto\CourseUnitDTO.java
+C:\Users\CZAR-COMPUTERS\Desktop\files\repo\c_lib\cocislib\backend\src\main\java\com\cocis\examhub\dto\CourseUnitRequestDTO.java
 C:\Users\CZAR-COMPUTERS\Desktop\files\repo\c_lib\cocislib\backend\src\main\java\com\cocis\examhub\service\ExamPaperService.java
 C:\Users\CZAR-COMPUTERS\Desktop\files\repo\c_lib\cocislib\backend\src\main\java\com\cocis\examhub\entity\ExamPaper.java
 C:\Users\CZAR-COMPUTERS\Desktop\files\repo\c_lib\cocislib\backend\src\main\java\com\cocis\examhub\controller\CourseController.java
