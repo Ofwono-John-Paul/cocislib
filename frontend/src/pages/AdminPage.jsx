@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getAllCourses, getCourseUnits, createCourseUnit, updateCourseUnit, deleteCourseUnit, uploadExamPaper } from '../services/api'
+import { getAllCourses, getCourseUnits, createCourseUnit, updateCourseUnit, deleteCourseUnit, uploadExamPaper, setAdminKey, getAdminKey, clearAdminKey } from '../services/api'
 
 function AdminPage() {
   const navigate = useNavigate()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [secretKey, setSecretKey] = useState('')
+  const [authError, setAuthError] = useState('')
   const [activeTab, setActiveTab] = useState('courseUnits') // 'courseUnits' or 'examPapers'
   
   // Course Units State
@@ -25,8 +28,42 @@ function AdminPage() {
   const [message, setMessage] = useState({ type: '', text: '' })
   const [showUnitForm, setShowUnitForm] = useState(false)
 
-  // Fetch courses on mount
+  // Check if already authenticated on mount
   useEffect(() => {
+    const storedKey = getAdminKey()
+    if (storedKey) {
+      setIsAuthenticated(true)
+      setSecretKey(storedKey)
+    }
+  }, [])
+
+  // Handle secret key submission
+  const handleAuthSubmit = (e) => {
+    e.preventDefault()
+    const correctKey = 'John@004'
+    
+    if (secretKey === correctKey) {
+      setAdminKey(secretKey)
+      setIsAuthenticated(true)
+      setAuthError('')
+    } else {
+      setAuthError('Invalid secret key')
+      setSecretKey('')
+    }
+  }
+
+  // Handle logout
+  const handleLogout = () => {
+    clearAdminKey()
+    setIsAuthenticated(false)
+    setSecretKey('')
+    navigate('/')
+  }
+
+  // Fetch courses on mount (only after authentication)
+  useEffect(() => {
+    if (!isAuthenticated) return
+    
     const fetchCourses = async () => {
       try {
         const response = await getAllCourses()
@@ -36,27 +73,36 @@ function AdminPage() {
         }
       } catch (error) {
         console.error('Error fetching courses:', error)
+        // If we get a 403, the key is invalid
+        if (error.response && error.response.status === 403) {
+          setAuthError('Session expired. Please enter the secret key again.')
+          setIsAuthenticated(false)
+          clearAdminKey()
+        }
       }
     }
     fetchCourses()
-  }, [])
+  }, [isAuthenticated])
 
   // Fetch course units when course changes
   useEffect(() => {
+    if (!isAuthenticated || !selectedCourse) return
+    
     const fetchCourseUnits = async () => {
-      if (selectedCourse) {
-        try {
-          const response = await getCourseUnits(selectedCourse)
-          setCourseUnits(response.data)
-        } catch (error) {
-          console.error('Error fetching course units:', error)
+      try {
+        const response = await getCourseUnits(selectedCourse)
+        setCourseUnits(response.data)
+      } catch (error) {
+        console.error('Error fetching course units:', error)
+        if (error.response && error.response.status === 403) {
+          setAuthError('Session expired. Please enter the secret key again.')
+          setIsAuthenticated(false)
+          clearAdminKey()
         }
-      } else {
-        setCourseUnits([])
       }
     }
     fetchCourseUnits()
-  }, [selectedCourse])
+  }, [selectedCourse, isAuthenticated])
 
   // Course Unit Handlers
   const handleAddUnit = () => {
@@ -96,7 +142,13 @@ function AdminPage() {
       setShowUnitForm(false)
       setEditingUnit(null)
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to save course unit' })
+      if (error.response && error.response.status === 403) {
+        setMessage({ type: 'error', text: 'Access denied. Invalid or missing admin key.' })
+        setIsAuthenticated(false)
+        clearAdminKey()
+      } else {
+        setMessage({ type: 'error', text: 'Failed to save course unit' })
+      }
     } finally {
       setLoading(false)
     }
@@ -114,7 +166,13 @@ function AdminPage() {
       setCourseUnits(response.data)
       setMessage({ type: 'success', text: 'Course unit deleted successfully!' })
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to delete course unit' })
+      if (error.response && error.response.status === 403) {
+        setMessage({ type: 'error', text: 'Access denied. Invalid or missing admin key.' })
+        setIsAuthenticated(false)
+        clearAdminKey()
+      } else {
+        setMessage({ type: 'error', text: 'Failed to delete course unit' })
+      }
     } finally {
       setLoading(false)
     }
@@ -154,10 +212,78 @@ function AdminPage() {
       setFile(null)
       setSelectedCourseUnit('')
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to upload exam paper' })
+      if (error.response && error.response.status === 403) {
+        setMessage({ type: 'error', text: 'Access denied. Invalid or missing admin key.' })
+        setIsAuthenticated(false)
+        clearAdminKey()
+      } else {
+        setMessage({ type: 'error', text: 'Failed to upload exam paper' })
+      }
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show authentication prompt if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-cocis-dark flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-cocis-primary rounded-xl p-8 w-full max-w-md shadow-2xl"
+        >
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-cocis-gold/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-cocis-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-white">Admin Access</h1>
+            <p className="text-white/60 mt-2">Enter the secret key to access the admin panel</p>
+          </div>
+
+          <form onSubmit={handleAuthSubmit} className="space-y-4">
+            <div>
+              <input
+                type="password"
+                value={secretKey}
+                onChange={(e) => setSecretKey(e.target.value)}
+                placeholder="Enter secret key"
+                className="w-full bg-cocis-dark text-white px-4 py-3 rounded-lg border border-cocis-accent focus:border-cocis-gold focus:outline-none"
+                required
+              />
+            </div>
+            
+            {authError && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="p-3 bg-red-600/20 text-red-400 rounded-lg text-sm text-center"
+              >
+                {authError}
+              </motion.div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full px-4 py-3 bg-cocis-gold text-white rounded-lg hover:bg-cocis-gold/80 transition-colors font-semibold"
+            >
+              Access Admin Panel
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => navigate('/')}
+              className="text-white/60 hover:text-white text-sm"
+            >
+              ← Back to Home
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    )
   }
 
   return (
@@ -176,7 +302,15 @@ function AdminPage() {
             ← Back
           </button>
           <h1 className="text-xl md:text-2xl font-bold text-white">Admin Panel</h1>
-          <div className="w-24" />
+          <button
+            onClick={handleLogout}
+            className="text-white/70 hover:text-white text-sm flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Logout
+          </button>
         </div>
       </motion.header>
 
@@ -503,8 +637,8 @@ function AdminPage() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full bg-cocis-gold hover:bg-cocis-gold/80 disabled:opacity-50 text-white py-3 rounded-lg font-semibold transition-colors"
+                  disabled={loading || !selectedCourseUnit || !file}
+                  className="w-full px-6 py-3 bg-cocis-gold text-white rounded-lg hover:bg-cocis-gold/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
                 >
                   {loading ? 'Uploading...' : 'Upload Exam Paper'}
                 </button>
