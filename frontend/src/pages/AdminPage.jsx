@@ -40,7 +40,7 @@ function AdminPage() {
   // Handle secret key submission
   const handleAuthSubmit = (e) => {
     e.preventDefault()
-    const correctKey = 'John@004'
+    const correctKey = import.meta.env.VITE_ADMIN_SECRET_KEY || 'John@004'
     
     if (secretKey === correctKey) {
       setAdminKey(secretKey)
