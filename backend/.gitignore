@@ -22,3 +22,5 @@ Thumbs.db
 # Uploads
 uploads/*
 !uploads/.gitkeep
+
+.env

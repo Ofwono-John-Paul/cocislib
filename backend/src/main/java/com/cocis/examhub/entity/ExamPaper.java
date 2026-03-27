@@ -27,6 +27,9 @@ public class ExamPaper {
     
     @Column(name = "file_name")
     private String fileName;
+
+    @Column(name = "cloudinary_public_id")
+    private String cloudinaryPublicId;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_unit_id", nullable = false)

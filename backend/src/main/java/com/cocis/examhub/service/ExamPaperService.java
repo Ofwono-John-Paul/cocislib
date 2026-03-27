@@ -70,16 +70,16 @@ public class ExamPaperService {
     public ExamPaperDTO uploadExamPaper(ExamPaperRequestDTO request) {
         CourseUnit courseUnit = courseUnitRepository.findById(request.getCourseUnitId())
                 .orElseThrow(() -> new RuntimeException("Course unit not found"));
-        
-        String fileUrl = fileStorageService.storeFile(request.getFile());
-        String originalFileName = request.getFile().getOriginalFilename();
+
+        FileStorageService.StoredFile storedFile = fileStorageService.storeFile(request.getFile());
         
         ExamPaper examPaper = ExamPaper.builder()
                 .courseUnit(courseUnit)
                 .examType(request.getExamType())
                 .academicYear(request.getAcademicYear())
-                .fileUrl(fileUrl)
-                .fileName(originalFileName)
+            .fileUrl(storedFile.getUrl())
+            .fileName(storedFile.getOriginalFileName())
+            .cloudinaryPublicId(storedFile.getPublicId())
                 .build();
         
         ExamPaper saved = examPaperRepository.save(examPaper);
@@ -90,8 +90,8 @@ public class ExamPaperService {
     public void deleteExamPaper(Long id) {
         ExamPaper examPaper = examPaperRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Exam paper not found"));
-        
-        fileStorageService.deleteFile(examPaper.getFileUrl());
+
+        fileStorageService.deleteFile(examPaper.getCloudinaryPublicId());
         examPaperRepository.delete(examPaper);
     }
     
