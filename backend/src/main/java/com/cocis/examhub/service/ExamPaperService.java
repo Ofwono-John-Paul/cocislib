@@ -79,7 +79,7 @@ public class ExamPaperService {
                 .academicYear(request.getAcademicYear())
             .fileUrl(storedFile.getUrl())
             .fileName(storedFile.getOriginalFileName())
-            .cloudinaryPublicId(storedFile.getPublicId())
+            .storageKey(storedFile.getPublicId())
                 .build();
         
         ExamPaper saved = examPaperRepository.save(examPaper);
@@ -91,7 +91,7 @@ public class ExamPaperService {
         ExamPaper examPaper = examPaperRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Exam paper not found"));
 
-        fileStorageService.deleteFile(examPaper.getCloudinaryPublicId());
+        fileStorageService.deleteFile(examPaper.getStorageKey());
         examPaperRepository.delete(examPaper);
     }
     

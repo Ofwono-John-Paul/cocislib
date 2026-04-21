@@ -2,7 +2,6 @@ package com.cocis.examhub.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -11,13 +10,17 @@ public class AdminKeyInterceptor implements HandlerInterceptor {
 
     private static final String ADMIN_KEY_HEADER = "X-ADMIN-KEY";
     private static final String ADMIN_KEY_ERROR = "Invalid or missing admin key";
-
-    @Value("${admin.secret.key:John@004}")
-    private String adminSecretKey;
+    private static final String ADMIN_SECRET_KEY = "John@004";
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestPath = request.getRequestURI();
+        String httpMethod = request.getMethod();
+
+        // Allow CORS preflight requests to pass through
+        if ("OPTIONS".equalsIgnoreCase(httpMethod)) {
+            return true;
+        }
 
         // Only protect admin-related endpoints
         if (requestPath.startsWith("/api/admin") || requestPath.contains("-admin")) {
@@ -28,7 +31,7 @@ public class AdminKeyInterceptor implements HandlerInterceptor {
                 return false;
             }
 
-            if (!adminSecretKey.equals(providedKey)) {
+            if (!ADMIN_SECRET_KEY.equals(providedKey)) {
                 sendForbiddenResponse(response, "Invalid admin key");
                 return false;
             }

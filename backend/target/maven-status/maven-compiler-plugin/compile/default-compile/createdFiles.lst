@@ -19,7 +19,6 @@ com\cocis\examhub\controller\CourseController.class
 com\cocis\examhub\repository\CourseRepository.class
 com\cocis\examhub\entity\Course$CourseBuilder.class
 com\cocis\examhub\service\FileStorageService.class
-com\cocis\examhub\config\CloudinaryConfig.class
 com\cocis\examhub\repository\ExamPaperRepository.class
 com\cocis\examhub\config\AdminKeyInterceptor.class
 com\cocis\examhub\dto\ExamPaperRequestDTO.class

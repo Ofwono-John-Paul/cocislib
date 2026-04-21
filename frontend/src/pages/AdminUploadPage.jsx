@@ -46,7 +46,12 @@ function AdminUploadPage() {
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0]
-    if (selectedFile && selectedFile.type === 'application/pdf') {
+    const isPdf = selectedFile && (
+      selectedFile.type === 'application/pdf' ||
+      selectedFile.name?.toLowerCase().endsWith('.pdf')
+    )
+
+    if (isPdf) {
       setFile(selectedFile)
     } else {
       setMessage({ type: 'error', text: 'Please select a PDF file' })
@@ -77,7 +82,9 @@ function AdminUploadPage() {
       setFile(null)
       setSelectedCourseUnit('')
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to upload exam paper' })
+      const backendMessage = error?.response?.data?.error || error?.response?.data?.message
+      const statusText = error?.response?.status ? ` (HTTP ${error.response.status})` : ''
+      setMessage({ type: 'error', text: backendMessage ? `${backendMessage}${statusText}` : `Failed to upload exam paper${statusText}` })
     } finally {
       setUploading(false)
     }

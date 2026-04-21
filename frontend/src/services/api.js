@@ -76,7 +76,6 @@ export const uploadExamPaper = (formData) => {
   return api.post('/admin/exams', formData, {
     headers: {
       ...getAdminHeaders(),
-      'Content-Type': 'multipart/form-data',
     },
   })
 }
