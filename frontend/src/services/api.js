@@ -27,10 +27,19 @@ const getAdminHeaders = () => {
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
+
+// Add axios interceptor to handle CORS and errors more gracefully
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Handle CORS errors
+    if (error.response === undefined) {
+      console.error('Network error - possible CORS issue:', error.message)
+    }
+    return Promise.reject(error)
+  }
+)
 
 // Course APIs
 export const getAllCourses = () => api.get('/courses')
