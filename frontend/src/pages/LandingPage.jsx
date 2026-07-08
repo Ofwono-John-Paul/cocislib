@@ -106,12 +106,12 @@ function LandingPage() {
         <span className="inline-block px-3 py-1 bg-cocis-accent rounded-full">
           Notes Section - Coming Soon
         </span>
-        <button
+        {/* <button
           onClick={() => navigate('/admin')}
           className="text-white/40 hover:text-cocis-gold text-xs transition-colors"
         >
           Admin Panel
-        </button>
+        </button> */}
       </motion.div>
     </div>
   )
