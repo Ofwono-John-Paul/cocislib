@@ -14,6 +14,7 @@ com\cocis\examhub\repository\PdfMetadataRepository.class
 com\cocis\examhub\service\CourseService.class
 com\cocis\examhub\dto\CourseUnitDTO$CourseUnitDTOBuilder.class
 com\cocis\examhub\dto\ExamPaperRequestDTO$ExamPaperRequestDTOBuilder.class
+com\cocis\examhub\config\GlobalExceptionHandler.class
 com\cocis\examhub\dto\PagedResponse.class
 com\cocis\examhub\controller\CourseController.class
 com\cocis\examhub\repository\CourseRepository.class
